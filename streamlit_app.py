@@ -47,8 +47,12 @@ all_uploaded_files = pilot_files + phase1_files + phase2_files + phase3_files + 
 
 # Fungsi untuk membaca sheet dari file Excel
 def load_sheets(uploaded_file):
-    xls = pd.ExcelFile(uploaded_file)
-    return xls.sheet_names
+    try:
+        xls = pd.ExcelFile(uploaded_file)
+        return xls.sheet_names
+    except Exception as e:
+        st.error(f"Gagal membaca file Excel: {e}")
+        return []
 
 # Menstandarisasi nama kolom
 def standardize_columns(df):
@@ -75,23 +79,30 @@ if all_uploaded_files:
         st.write(f"Proses file untuk {hospital_name} - {uploaded_file.name}")
 
         sheet_names = load_sheets(uploaded_file)
+        if not sheet_names:
+            st.warning(f"Tidak ada sheet yang ditemukan dalam file {uploaded_file.name}.")
+            continue
+
         selected_sheet = st.selectbox(f"Pilih sheet untuk {hospital_name} - {uploaded_file.name}:", sheet_names, key=f"sheet_{hospital_name}_{uploaded_file.name}")
 
         # Baca data dari sheet yang dipilih
-        df = pd.read_excel(uploaded_file, sheet_name=selected_sheet)
+        try:
+            df = pd.read_excel(uploaded_file, sheet_name=selected_sheet)
 
-        # Menstandarisasi nama kolom
-        df = standardize_columns(df)
+            # Menstandarisasi nama kolom
+            df = standardize_columns(df)
 
-        # Tambahkan nama rumah sakit ke data
-        df["Hospital Name"] = hospital_name
+            # Tambahkan nama rumah sakit ke data
+            df["Hospital Name"] = hospital_name
 
-        # Jika DataFrame gabungan kosong, langsung assign
-        if combined_data.empty:
-            combined_data = df
-        else:
-            # Gabungkan data berdasarkan kesamaan kolom
-            combined_data = pd.concat([combined_data, df], ignore_index=True, join="inner")
+            # Jika DataFrame gabungan kosong, langsung assign
+            if combined_data.empty:
+                combined_data = df
+            else:
+                # Gabungkan data berdasarkan kesamaan kolom
+                combined_data = pd.concat([combined_data, df], ignore_index=True, join="inner")
+        except Exception as e:
+            st.error(f"Gagal memproses file {uploaded_file.name} - {e}")
 
     # Tampilkan data gabungan dengan lebar kolom yang pas dengan layar
     st.write("Data Gabungan dari Semua File:")
