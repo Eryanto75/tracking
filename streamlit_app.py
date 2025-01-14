@@ -130,6 +130,11 @@ if all_uploaded_files:
         combined_data_none_to_be = combined_data[combined_data["To Be"].isnull()]
         st.write("Data Gabungan dengan 'To Be' = None:")
         st.dataframe(combined_data_none_to_be, use_container_width=True)
+
+        # Menampilkan data dengan `To Be = None` dan `Is Active = 1`
+        combined_data_none_to_be_active = combined_data_none_to_be[combined_data_none_to_be["Is Active"] == 1]
+        st.write("Data Gabungan dengan 'To Be' = None dan 'Is Active' = 1:")
+        st.dataframe(combined_data_none_to_be_active, use_container_width=True)
     else:
         st.warning("Kolom 'To Be' tidak ditemukan dalam data.")
 else:
