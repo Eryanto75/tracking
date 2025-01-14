@@ -41,6 +41,7 @@ st.markdown("---")  # Garis pembatas setelah Phase 2
 phase3_files = create_phase_uploaders("Phase 3", phase3_names)
 st.markdown("---")  # Garis pembatas setelah Phase 3
 phase4_files = create_phase_uploaders("Phase 4", phase4_names)
+st.markdown("---")  # Garis pembatas setelah Phase 4
 
 # Menggabungkan semua file yang diunggah dari semua phase
 all_uploaded_files = pilot_files + phase1_files + phase2_files + phase3_files + phase4_files
@@ -126,6 +127,20 @@ if all_uploaded_files:
     # Tampilkan data gabungan dengan lebar kolom yang pas dengan layar
     st.write("Data Gabungan dari Semua File:")
     st.dataframe(combined_data, use_container_width=True)
+
+    # Menampilkan data dengan nilai null pada kolom 'To Be'
+    if "To Be" in combined_data.columns:
+        # Menyaring data yang memiliki nilai null pada kolom 'To Be'
+        null_data = combined_data[combined_data["To Be"].isnull()]
+        
+        if not null_data.empty:
+            # Tampilkan tabel dengan data yang memiliki nilai null di kolom 'To Be'
+            st.subheader("Data dengan Nilai Null pada Kolom 'To Be'")
+            st.dataframe(null_data, use_container_width=True)
+        else:
+            st.info("Tidak ada nilai null pada kolom 'To Be'.")
+    else:
+        st.warning("Kolom 'To Be' tidak ditemukan dalam data.")
 
     # Unduh data gabungan sebagai CSV
     combined_csv = combined_data.to_csv(index=False).encode("utf-8")
