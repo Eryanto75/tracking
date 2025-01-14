@@ -118,17 +118,17 @@ if all_uploaded_files:
     st.write("Data Gabungan dari Semua File:")
     st.dataframe(combined_data, use_container_width=True)
 
-    # Menampilkan data dengan nilai null pada kolom 'To Be'
+    # Menampilkan data dengan nilai null pada kolom 'To Be' dan 'Is Active' = 1
     if "To Be" in combined_data.columns:
-        # Menyaring data yang memiliki nilai null pada kolom 'To Be'
-        null_data = combined_data[combined_data["To Be"].isnull()]
+        # Menyaring data yang memiliki nilai null pada kolom 'To Be' dan 'Is Active' == 1
+        filtered_data = combined_data[(combined_data["To Be"].isnull()) & (combined_data["Is Active"] == 1)]
         
-        if not null_data.empty:
-            # Tampilkan tabel dengan data yang memiliki nilai null di kolom 'To Be'
-            st.subheader("Data dengan Nilai Null pada Kolom 'To Be'")
-            st.dataframe(null_data, use_container_width=True)
+        if not filtered_data.empty:
+            # Tampilkan tabel dengan data yang memiliki nilai null di kolom 'To Be' dan 'Is Active' = 1
+            st.subheader("Data dengan Nilai Null pada Kolom 'To Be' dan 'Is Active' = 1")
+            st.dataframe(filtered_data, use_container_width=True)
         else:
-            st.info("Tidak ada nilai null pada kolom 'To Be'.")
+            st.info("Tidak ada data dengan nilai null pada kolom 'To Be' dan 'Is Active' = 1.")
     else:
         st.warning("Kolom 'To Be' tidak ditemukan dalam data.")
 
