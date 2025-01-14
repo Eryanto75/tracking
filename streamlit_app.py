@@ -129,12 +129,12 @@ if all_uploaded_files:
         st.subheader("Data dengan Nilai Null pada Kolom 'To Be'")
 
         # Filter data yang memiliki nilai null pada kolom 'To Be'
-        if all(col in combined_data.columns for col in ['Code', 'Name', 'Admission Type Id', 'Hospital Name']):
+        if all(col in combined_data.columns for col in ['Code', 'name', 'Admission Type Id', 'Hospital Name']):
             null_data = combined_data[combined_data['To Be'].isnull()]
 
             # Menampilkan tabel dengan 'Code', 'Name', 'Admission Type Id', dan 'Hospital Name'
             if not null_data.empty:
-                null_table = null_data[['Code', 'Name', 'Admission Type Id', 'Hospital Name']].drop_duplicates()
+                null_table = null_data[['Code', 'name', 'Admission Type Id', 'Hospital Name']].drop_duplicates()
                 st.dataframe(null_table)
             else:
                 st.info("Tidak ada nilai null pada kolom 'To Be' dalam data.")
