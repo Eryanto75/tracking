@@ -132,7 +132,7 @@ if all_uploaded_files:
         null_data = combined_data[combined_data['To Be'].isnull()]
 
         # Menampilkan tabel dengan 'Code' dan 'Admission Type Id' yang memiliki nilai null
-        null_table = null_data[['Code', 'Admission Type Id', 'Hospital Name']].drop_duplicates()
+        null_table = null_data[['Code', 'Name', 'Admission Type Id', 'Hospital Name']].drop_duplicates()
         st.dataframe(null_table)
 
     else:
