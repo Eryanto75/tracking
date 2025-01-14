@@ -69,6 +69,11 @@ def standardize_columns(df):
     # Mengubah kolom yang ada menjadi format standar
     df = df.rename(columns=lambda x: x.strip().lower())
     df = df.rename(columns=column_mapping)
+
+    # Mengganti nilai True menjadi 1 dan False menjadi 0 pada kolom 'Is Active'
+    if "Is Active" in df.columns:
+        df["Is Active"] = df["Is Active"].replace({True: 1, False: 0})
+
     return df
 
 # Memproses file yang diunggah
@@ -130,14 +135,14 @@ if all_uploaded_files:
 
         # Filter data yang memiliki nilai null pada kolom 'To Be'
         if all(col in combined_data.columns for col in ['Code', 'Name', 'Admission Type Id', 'Hospital Name']):
-            null_data = combined_data[(combined_data['To Be'].isnull()) & (combined_data['Is Active'] == True)]
+            null_data = combined_data[(combined_data['To Be'].isnull()) & (combined_data['Is Active'] == 1)]
 
             # Menampilkan tabel dengan 'Code', 'Name', 'Admission Type Id', dan 'Hospital Name'
             if not null_data.empty:
                 null_table = null_data[['Code', 'Name', 'Admission Type Id', 'Hospital Name']].drop_duplicates()
                 st.dataframe(null_table)
             else:
-                st.info("Tidak ada nilai null pada kolom 'To Be' dalam data dengan 'Is Active' = True.")
+                st.info("Tidak ada nilai null pada kolom 'To Be' dalam data dengan 'Is Active' = 1.")
         else:
             st.warning("Kolom yang diperlukan tidak ditemukan dalam data.")
 
