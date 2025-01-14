@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import sqlite3  # Untuk menyimpan data ke dalam database SQLite
 
 # Konfigurasi halaman untuk memperluas ukuran aplikasi
 st.set_page_config(
@@ -77,12 +76,6 @@ def standardize_columns(df):
 
     return df
 
-# Fungsi untuk menyimpan data ke dalam database SQLite
-def save_to_database(df, hospital_name):
-    conn = sqlite3.connect("tracking_data.db")  # Menggunakan SQLite
-    df.to_sql(hospital_name, conn, if_exists='replace', index=False)
-    conn.close()
-
 # Memproses file yang diunggah
 if all_uploaded_files:
     combined_data = pd.DataFrame()  # DataFrame untuk menampung data gabungan
@@ -111,9 +104,6 @@ if all_uploaded_files:
 
             # Tambahkan nama rumah sakit ke data
             df["Hospital Name"] = hospital_name
-
-            # Menyimpan data ke database SQLite
-            save_to_database(df, hospital_name)
 
             # Jika DataFrame gabungan kosong, langsung assign
             if combined_data.empty:
