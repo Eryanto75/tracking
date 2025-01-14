@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
+import sqlite3  # Untuk menyimpan data ke dalam database SQLite
 
 # Konfigurasi halaman untuk memperluas ukuran aplikasi
 st.set_page_config(
@@ -76,6 +76,12 @@ def standardize_columns(df):
 
     return df
 
+# Fungsi untuk menyimpan data ke dalam database SQLite
+def save_to_database(df, hospital_name):
+    conn = sqlite3.connect("tracking_data.db")  # Menggunakan SQLite
+    df.to_sql(hospital_name, conn, if_exists='replace', index=False)
+    conn.close()
+
 # Memproses file yang diunggah
 if all_uploaded_files:
     combined_data = pd.DataFrame()  # DataFrame untuk menampung data gabungan
@@ -94,11 +100,19 @@ if all_uploaded_files:
         try:
             df = pd.read_excel(uploaded_file, sheet_name=selected_sheet)
 
+            # Memeriksa apakah baris pertama kosong dan jika ya, menjadikan baris kedua sebagai header
+            if df.iloc[0].isnull().all():
+                df.columns = df.iloc[1]  # Menjadikan baris kedua sebagai header
+                df = df.drop([0, 1])  # Menghapus baris pertama dan kedua yang tidak perlu
+
             # Menstandarisasi nama kolom
             df = standardize_columns(df)
 
             # Tambahkan nama rumah sakit ke data
             df["Hospital Name"] = hospital_name
+
+            # Menyimpan data ke database SQLite
+            save_to_database(df, hospital_name)
 
             # Jika DataFrame gabungan kosong, langsung assign
             if combined_data.empty:
@@ -113,42 +127,6 @@ if all_uploaded_files:
     st.write("Data Gabungan dari Semua File:")
     st.dataframe(combined_data, use_container_width=True)
 
-    # Menghitung jumlah nilai null di kolom "To Be" berdasarkan rumah sakit
-    if "To Be" in combined_data.columns:
-        null_counts_by_hospital = combined_data.groupby("Hospital Name")["To Be"].apply(lambda x: x.isnull().sum())
-
-        # Mengurutkan jumlah nilai null dari yang terbanyak
-        null_counts_by_hospital_sorted = null_counts_by_hospital.sort_values(ascending=False)
-
-        # Visualisasi barchart untuk jumlah nilai null di kolom "To Be" berdasarkan rumah sakit
-        st.subheader("Jumlah Nilai Null pada Kolom 'To Be' per Rumah Sakit")
-
-        fig, ax = plt.subplots(figsize=(10, 6))
-        null_counts_by_hospital_sorted.plot(kind='bar', ax=ax, color='skyblue')
-        ax.set_ylabel('Jumlah Nilai Null')
-        ax.set_title('Jumlah Nilai Null pada Kolom "To Be" per Rumah Sakit')
-        plt.xticks(rotation=45, ha="right")
-        st.pyplot(fig)
-
-        # Menampilkan tabel terpisah untuk 'Code', 'Name', dan 'Admission Type Id' yang memiliki nilai null pada kolom "To Be"
-        st.subheader("Data dengan Nilai Null pada Kolom 'To Be'")
-
-        # Filter data yang memiliki nilai null pada kolom 'To Be'
-        if all(col in combined_data.columns for col in ['Code', 'Name', 'Admission Type Id', 'Hospital Name']):
-            null_data = combined_data[(combined_data['To Be'].isnull()) & (combined_data['Is Active'] == 1)]
-
-            # Menampilkan tabel dengan 'Code', 'Name', 'Admission Type Id', dan 'Hospital Name'
-            if not null_data.empty:
-                null_table = null_data[['Code', 'Name', 'Admission Type Id', 'Hospital Name']].drop_duplicates()
-                st.dataframe(null_table)
-            else:
-                st.info("Tidak ada nilai null pada kolom 'To Be' dalam data dengan 'Is Active' = 1.")
-        else:
-            st.warning("Kolom yang diperlukan tidak ditemukan dalam data.")
-
-    else:
-        st.warning("Kolom 'To Be' tidak ditemukan dalam data.")
-
     # Unduh data gabungan sebagai CSV
     combined_csv = combined_data.to_csv(index=False).encode("utf-8")
     st.download_button(
@@ -157,5 +135,6 @@ if all_uploaded_files:
         file_name="tracking_data.csv",
         mime="text/csv"
     )
+
 else:
     st.info("Unggah file untuk melanjutkan.")
