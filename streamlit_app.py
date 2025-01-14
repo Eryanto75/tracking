@@ -125,22 +125,16 @@ if all_uploaded_files:
         plt.xticks(rotation=45, ha="right")
         st.pyplot(fig)
 
-        # Menampilkan tabel terpisah untuk 'Code' dan 'Admission Type Id' yang memiliki nilai null pada kolom "To Be"
+        # Menampilkan tabel terpisah untuk 'Code', 'Name', dan 'Admission Type Id' yang memiliki nilai null pada kolom "To Be"
         st.subheader("Data dengan Nilai Null pada Kolom 'To Be'")
 
         # Filter data yang memiliki nilai null pada kolom 'To Be'
         null_data = combined_data[combined_data['To Be'].isnull()]
 
-        # Periksa apakah kolom yang dibutuhkan ada dalam DataFrame
-        required_columns = ['Code', 'Name', 'Admission Type Id', 'Hospital Name']
-        available_columns = [col for col in required_columns if col in null_data.columns]
+        # Menampilkan tabel dengan 'Code', 'Name', dan 'Admission Type Id' yang memiliki nilai null
+        null_table = null_data[['Code', 'Name', 'Admission Type Id', 'Hospital Name']].drop_duplicates()
+        st.dataframe(null_table)
 
-        if available_columns:
-            # Menampilkan tabel dengan kolom yang tersedia
-            null_table = null_data[available_columns].drop_duplicates()
-            st.dataframe(null_table)
-        else:
-            st.warning(f"Tidak ada kolom yang tersedia dari {required_columns}.")
     else:
         st.warning("Kolom 'To Be' tidak ditemukan dalam data.")
 
