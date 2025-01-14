@@ -58,7 +58,7 @@ def load_sheets(uploaded_file):
 def standardize_columns(df):
     column_mapping = {
         'code': 'Code',
-        'Name': 'Name',
+        'name': 'Name',
         'notes': 'Notes',
         'admission type id': 'Admission Type Id',
         'service line id': 'Service Line Id',
@@ -114,34 +114,23 @@ if all_uploaded_files:
         except Exception as e:
             st.error(f"Gagal memproses file {uploaded_file.name} - {e}")
 
-    # Menyaring baris yang memiliki nilai null, None, atau 0 pada semua kolom
-    combined_data_cleaned = combined_data.replace({None: pd.NA, 0: pd.NA})  # Ganti None dan 0 dengan NA
-    combined_data_cleaned = combined_data_cleaned.dropna(how='any')  # Menghapus baris dengan nilai NA (null atau 0)
-
-    # Tampilkan data gabungan yang sudah dibersihkan
-    st.write("Data Gabungan yang Sudah Dibersihkan (Tanpa Nilai Null, None, atau 0):")
-    st.dataframe(combined_data_cleaned, use_container_width=True)
-
-    # Menampilkan data dengan nilai null pada kolom 'To Be' dan 'Is Active' == 1
-    if "To Be" in combined_data_cleaned.columns:
-        # Menyaring data yang memiliki nilai null pada kolom 'To Be' dan 'Is Active' == 1
-        filtered_data = combined_data_cleaned[(combined_data_cleaned["To Be"].isnull()) & (combined_data_cleaned["Is Active"] == 1)]
-        
-        if not filtered_data.empty:
-            # Tampilkan tabel dengan data yang memiliki nilai null di kolom 'To Be' dan 'Is Active' = 1
-            st.subheader("Data dengan Nilai Null pada Kolom 'To Be' dan 'Is Active' = 1")
-            st.dataframe(filtered_data, use_container_width=True)
-        else:
-            st.info("Tidak ada data dengan nilai null pada kolom 'To Be' dan 'Is Active' = 1.")
+    # Menyaring data berdasarkan nilai `Is Active` = 1
+    if "Is Active" in combined_data.columns:
+        combined_data_active = combined_data[combined_data["Is Active"] == 1]
     else:
-        st.warning("Kolom 'To Be' tidak ditemukan dalam data.")
+        st.warning("Kolom 'Is Active' tidak ditemukan dalam data.")
+        combined_data_active = combined_data  # Jika kolom tidak ditemukan, tetap tampilkan semua data
 
-    # Unduh data gabungan sebagai CSV
-    combined_csv = combined_data_cleaned.to_csv(index=False).encode("utf-8")
+    # Tampilkan data dengan `Is Active` = 1
+    st.write("Data Gabungan dengan 'Is Active' = 1:")
+    st.dataframe(combined_data_active, use_container_width=True)
+
+    # Unduh data gabungan yang sudah difilter sebagai CSV
+    combined_csv = combined_data_active.to_csv(index=False).encode("utf-8")
     st.download_button(
-        label="Download Data Gabungan",
+        label="Download Data Gabungan dengan 'Is Active' = 1",
         data=combined_csv,
-        file_name="tracking_data_cleaned.csv",
+        file_name="tracking_data_active.csv",
         mime="text/csv"
     )
 
