@@ -114,14 +114,18 @@ if all_uploaded_files:
         except Exception as e:
             st.error(f"Gagal memproses file {uploaded_file.name} - {e}")
 
-    # Tampilkan data gabungan dengan lebar kolom yang pas dengan layar
-    st.write("Data Gabungan dari Semua File:")
-    st.dataframe(combined_data, use_container_width=True)
+    # Menyaring baris yang memiliki nilai null, None, atau 0 pada semua kolom
+    combined_data_cleaned = combined_data.replace({None: pd.NA, 0: pd.NA})  # Ganti None dan 0 dengan NA
+    combined_data_cleaned = combined_data_cleaned.dropna(how='any')  # Menghapus baris dengan nilai NA (null atau 0)
 
-    # Menampilkan data dengan nilai null pada kolom 'To Be' dan 'Is Active' = 1
-    if "To Be" in combined_data.columns:
+    # Tampilkan data gabungan yang sudah dibersihkan
+    st.write("Data Gabungan yang Sudah Dibersihkan (Tanpa Nilai Null, None, atau 0):")
+    st.dataframe(combined_data_cleaned, use_container_width=True)
+
+    # Menampilkan data dengan nilai null pada kolom 'To Be' dan 'Is Active' == 1
+    if "To Be" in combined_data_cleaned.columns:
         # Menyaring data yang memiliki nilai null pada kolom 'To Be' dan 'Is Active' == 1
-        filtered_data = combined_data[(combined_data["To Be"].isnull()) & (combined_data["Is Active"] == 1)]
+        filtered_data = combined_data_cleaned[(combined_data_cleaned["To Be"].isnull()) & (combined_data_cleaned["Is Active"] == 1)]
         
         if not filtered_data.empty:
             # Tampilkan tabel dengan data yang memiliki nilai null di kolom 'To Be' dan 'Is Active' = 1
@@ -133,11 +137,11 @@ if all_uploaded_files:
         st.warning("Kolom 'To Be' tidak ditemukan dalam data.")
 
     # Unduh data gabungan sebagai CSV
-    combined_csv = combined_data.to_csv(index=False).encode("utf-8")
+    combined_csv = combined_data_cleaned.to_csv(index=False).encode("utf-8")
     st.download_button(
         label="Download Data Gabungan",
         data=combined_csv,
-        file_name="tracking_data.csv",
+        file_name="tracking_data_cleaned.csv",
         mime="text/csv"
     )
 
