@@ -121,18 +121,16 @@ if all_uploaded_files:
         st.warning("Kolom 'Is Active' tidak ditemukan dalam data.")
         combined_data_active = combined_data  # Jika kolom tidak ditemukan, tetap tampilkan semua data
 
-    # Tampilkan data dengan `Is Active` = 1
+    # Menampilkan data dengan `Is Active` = 1
     st.write("Data Gabungan dengan 'Is Active' = 1:")
     st.dataframe(combined_data_active, use_container_width=True)
 
-    # Unduh data gabungan yang sudah difilter sebagai CSV
-    combined_csv = combined_data_active.to_csv(index=False).encode("utf-8")
-    st.download_button(
-        label="Download Data Gabungan dengan 'Is Active' = 1",
-        data=combined_csv,
-        file_name="tracking_data_active.csv",
-        mime="text/csv"
-    )
-
+    # Menampilkan data dengan `To Be = None`
+    if "To Be" in combined_data.columns:
+        combined_data_none_to_be = combined_data[combined_data["To Be"].isnull()]
+        st.write("Data Gabungan dengan 'To Be' = None:")
+        st.dataframe(combined_data_none_to_be, use_container_width=True)
+    else:
+        st.warning("Kolom 'To Be' tidak ditemukan dalam data.")
 else:
     st.info("Unggah file untuk melanjutkan.")
